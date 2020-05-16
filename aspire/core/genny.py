@@ -15,10 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 from strgen import StringGenerator
+
 
 class GenerateId:
     tags = dict(
@@ -31,7 +29,7 @@ class GenerateId:
             code='[a-x2-8]{24:32}'
         )
         
-    def genid(self, doc_tag):
+    async def genid(self, doc_tag:str=None):
         """ 
             Doc Tags: String( doc, app, key, job, user, item, code,task,name)
             UseCase: 
@@ -49,14 +47,12 @@ class GenerateId:
         """
         
         if doc_tag == 'user':
-            u_id = StringGenerator(str(self.tags[doc_tag])).render(unique=True)
-            u_id = 'U{}'.format(u_id)
-        else:
-            u_id = StringGenerator(str(self.tags[doc_tag])).render(unique=True)
-        return u_id
-        
+            #u_id = StringGenerator(str(self.tags[doc_tag])).render(unique=True)
+            return f"U{StringGenerator(str(self.tags[doc_tag])).render(unique=True)}"
+        return StringGenerator(str(self.tags[doc_tag])).render(unique=True)
+            
 
-    def nameid(self, fn='Jane',ln='Dear',sec=5):
+    async def nameid(self, fn:str='Jane',ln:str='Dear',sec:int=5):
         """ 
             Name Identification by initials fn='Jane', ln='Dear' and given number sequence sec=5.
             
@@ -77,24 +73,20 @@ class GenerateId:
         
         """
         code = '[0-9]{4:%s}'% int(sec)
-        prefix = '{fni}{lni}'.format(fni=fn[0].capitalize(),lni=ln[0].capitalize())
-        u_id = StringGenerator(str(code)).render(unique=True)
-        u_id = f"{prefix}{u_id}"
-        
-        return u_id
-        
+        return f"{fn[0].capitalize()}{ln[0].capitalize()}{StringGenerator(str(code)).render(unique=True)}"
+               
 
-    def shortnameid(self, fn='Jane',ln='Dear',sec=2):
+    async def short_nameid(self, fn:str='Jane',ln:str='Dear',sec:int=2):
         """ 
             Name Identification by initials fn='Jane', ln='Dear' and given number sequence sec=5.
             
             UseCase: 
                         >>> import genny
-                        >>> from genny import shortnameid
-                        >>> from genny import shortnameid as id
+                        >>> from genny import short_nameid
+                        >>> from genny import short_nameid as id
                         
-                        >>> id = genny.shortnameid('Peter','Built',2)
-                        >>> id = shortnameid('Peter','Built')
+                        >>> id = genny.short_nameid('Peter','Built',2)
+                        >>> id = short_nameid('Peter','Built')
                         >>> id = id(p','b',3)
                         >>> id = id() # default false id 
                         
@@ -105,16 +97,11 @@ class GenerateId:
         
         """
         code = '[0-9]{2:%s}'% int(sec)
-        prefix = '{fni}{lni}'.format(fni=fn[0].capitalize(),lni=ln[0].capitalize())
-        u_id = StringGenerator(str(code)).render(unique=True)
-        u_id = '{pre}{id}'.format(pre=prefix,id=u_id)
+        return f"{fn[0].capitalize()}{ln[0].capitalize()}{StringGenerator(str(code)).render(unique=True)}"
         
-        return u_id
 
-
-
-    def eventid(self, event,event_code,sec=8):
-        """ 
+    async def eventid(self, event,event_code,sec=8):
+        """EventId 
             Event Identification by initials fn='Jane', ln='Dear' and given number sequence sec=5.
             
             UseCase: 
@@ -124,26 +111,18 @@ class GenerateId:
                         
                         >>> id = genny.eventid('Product','LAUNCH',6)
                         >>> id = eventid('Product','LAUNCH',5)
-                        >>> id = id('Product', 'LAUNCH',4)
-                        
-                        
+                        >>> id = id('Product', 'LAUNCH',4)                       
                 Yeilds ... PROLAUNCH-884730
                         ... PROLAUNCH-18973
-                        ... PROLAUNCH-4631
-                        
+                        ... PROLAUNCH-4631                       
         
         """
         code = '[0-9]{4:%s}'% int(sec)
-        prefix = '{fni}{lni}'.format(fni=event[:3].upper(),lni=event_code)
-        u_id = StringGenerator(str(code)).render(unique=True)
-        u_id = '{pre}-{id}'.format(pre=prefix,id=u_id)
+        return f"{event[:3].upper()}{event_code}-{StringGenerator(str(code)).render(unique=True)}"
         
-        return u_id
 
-
-
-    def shorteventid(self, event,event_code,sec=2):
-        """ 
+    async def short_eventid(self, event,event_code,sec=2):
+        """ShortEventId 
             Event Identification by initials fn='Jane', ln='Dear' and given number sequence sec=2.
             
             UseCase: 
@@ -154,17 +133,12 @@ class GenerateId:
                         >>> id = genny.shorteventid('Product','LAUNCH',2)
                         >>> id = shorteventid('Product','LAUNCH')
                         >>> id = id('Product', 'LAUNCH',3)
-                        
-                        
                 Yeilds ... PROLAUNCH-88
                         ... PROLAUNCH-90
-                        ... PROLAUNCH-461
-                        
+                        ... PROLAUNCH-461                       
         
         """
         code = '[0-9]{2:%s}'% int(sec)
-        prefix = '{fni}{lni}'.format(fni=event[:3].upper(),lni=event_code)
-        u_id = StringGenerator(str(code)).render(unique=True)
-        u_id = '{pre}-{id}'.format(pre=prefix,id=u_id)
+        return f"{event[:3].upper()}{event_code}-{StringGenerator(str(code)).render(unique=True)}"
         
-        return u_id
+        
