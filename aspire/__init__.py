@@ -1,2 +1,2 @@
-from .core import *
-from . import ext
+from aspire.web import *
+from aspire import ext

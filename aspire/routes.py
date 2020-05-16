@@ -3,14 +3,14 @@ import json
 import re
 import inspect
 
-#from aspire.utils.routing import Lifespan
-from aspire.utils.wsgi_helper import WSGIMiddleware
-from aspire.utils.websockets import WebSocket, WebSocketClose
-from aspire.utils.concurrency import run_in_threadpool
-from aspire.utils.exceptions import HTTPException
+from aspire.core.routing import Lifespan
+from aspire.core.wsgi_helper import WSGIMiddleware
+from aspire.core.websockets import WebSocket, WebSocketClose
+from aspire.core.concurrency import run_in_threadpool
+from aspire.core.exceptions import HTTPException
 
 from aspire.models import Request, Response
-import aspire.status_codes
+from aspire import status_codes
 from aspire.formats import get_formats
 from aspire.statics import DEFAULT_SESSION_COOKIE
 
@@ -213,7 +213,7 @@ class Router:
         self.default_endpoint = (
             self.default_response if default_response is None else default_response
         )
-        #self.lifespan_handler = Lifespan()
+        self.lifespan_handler = Lifespan()
         self.before_requests = (
             {"http": [], "ws": []} if before_requests is None else before_requests
         )

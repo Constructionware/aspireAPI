@@ -9,21 +9,21 @@ from http.cookies import SimpleCookie
 
 import chardet
 import rfc3986
-#import graphene
-#import yaml
+import graphene
+import yaml
 
 from requests.structures import CaseInsensitiveDict
 from requests.cookies import RequestsCookieJar
 
-from aspire.utils.datastructures import MutableHeaders
-from aspire.utils.requests import Request as StarletteRequest, State
-from aspire.utils.responses import (
-    Response as StarletteResponse,
-    StreamingResponse as StarletteStreamingResponse,
+from aspire.core.datastructures import MutableHeaders
+from aspire.core.requests import Request as Requester, State
+from aspire.core.responses import (
+    Response as Responder,
+    StreamingResponse as ResponseStream,
 )
 
-from aspire.status_codes import HTTP_200, HTTP_301
-from aspire.statics import DEFAULT_ENCODING
+from .status_codes import HTTP_200, HTTP_301
+from .statics import DEFAULT_ENCODING
 
 
 class QueryDict(dict):
@@ -96,7 +96,7 @@ class QueryDict(dict):
 
 class Request:
     __slots__ = [
-        "_starlette",
+        "_aspire",
         "formats",
         "_headers",
         "_encoding",
@@ -106,14 +106,14 @@ class Request:
     ]
 
     def __init__(self, scope, receive, api=None, formats=None):
-        self._starlette = StarletteRequest(scope, receive)
+        self._aspire = Requester(scope, receive)
         self.formats = formats
         self._encoding = None
         self.api = api
         self._content = None
 
         headers = CaseInsensitiveDict()
-        for key, value in self._starlette.headers.items():
+        for key, value in self._aspire.headers.items():
             headers[key] = value
 
         self._headers = headers
@@ -122,7 +122,7 @@ class Request:
     @property
     def session(self):
         """The session data, in dict form, from the Request."""
-        return self._starlette.session
+        return self._aspire.session
 
     @property
     def headers(self):
@@ -136,12 +136,12 @@ class Request:
     @property
     def method(self):
         """The incoming HTTP method used for the request, lower-cased."""
-        return self._starlette.method.lower()
+        return self._aspire.method.lower()
 
     @property
     def full_url(self):
         """The full URL of the Request, query parameters and all."""
-        return str(self._starlette.url)
+        return str(self._aspire.url)
 
     @property
     def url(self):
@@ -182,7 +182,7 @@ class Request:
 
         Usage: ``request.state.time_started = time.time()``
         """
-        return self._starlette.state
+        return self._aspire.state
 
     @property
     async def encoding(self):
@@ -201,7 +201,7 @@ class Request:
     async def content(self):
         """The Request body, as bytes. Must be awaited."""
         if not self._content:
-            self._content = await self._starlette.body()
+            self._content = await self._aspire.body()
         return self._content
 
     @property
@@ -327,7 +327,7 @@ class Response:
             if self.req.accepts(format):
                 return (await self.formats[format](self, encode=True)), {}
 
-        # Default to JSON anyway.
+        # Default to JSON.
         return (
             await self.formats["json"](self, encode=True),
             {"Content-Type": "application/json"},
@@ -341,7 +341,7 @@ class Response:
         path="/",
         domain=None,
         max_age=None,
-        secure=False,
+        secure=True,
         httponly=True,
     ):
         self.cookies[key] = value
@@ -357,12 +357,12 @@ class Response:
         morsel["secure"] = secure
         morsel["httponly"] = httponly
 
-    def _prepare_cookies(self, starlette_response):
+    def _prepare_cookies(self, aspire_response):
         cookie_header = (
             (b"set-cookie", morsel.output(header="").lstrip().encode("latin-1"))
             for morsel in self.cookies.values()
         )
-        starlette_response.raw_headers.extend(cookie_header)
+        aspire_response.raw_headers.extend(cookie_header)
 
     async def __call__(self, scope, receive, send):
         body, headers = await self.body
@@ -370,9 +370,9 @@ class Response:
             headers.update(self.headers)
 
         if self._stream is not None:
-            response_cls = StarletteStreamingResponse
+            response_cls =ResponseStream
         else:
-            response_cls = StarletteResponse
+            response_cls = Responder
 
         response = response_cls(body, status_code=self.status_code, headers=headers)
         self._prepare_cookies(response)

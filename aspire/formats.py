@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 import yaml
 from requests_toolbelt.multipart import decoder
 
-from aspire.models import QueryDict
+from .models import QueryDict
 
 
 async def format_form(r, encode=False):

@@ -1,76 +1,75 @@
-#aspire/api.py
+import json
+import os
 
-#---------------- System Layer Dependencies -----------------
-import jinja2, json, os, uvicorn 
 from pathlib import Path
 
-#---------------- Application Layer Dependencies ------------
-from aspire.utils.exceptions import ExceptionMiddleware
-from aspire.utils.wsgi_helper import WSGIMiddleware
-from aspire.utils.errors_helper import ServerErrorMiddleware
-from aspire.utils.cors_helper import CORSMiddleware
-from aspire.utils.gzip_helper import GZipMiddleware
-from aspire.utils.httpsredirect_helper import HTTPSRedirectMiddleware
-from aspire.utils.trustedhost_helper import TrustedHostMiddleware
-from aspire.utils.sessions_helper import SessionMiddleware
-#from aspire.utils.routing import Lifespan
-from aspire.utils.staticfiles import StaticFiles
-from aspire.utils.testclient import TestClient
-from aspire.utils.websockets import WebSocket
-
-#---------------- Module Layer Dependencies -----------------
+import jinja2
+import uvicorn
+from aspire.core.exceptions import ExceptionMiddleware
+from aspire.core.wsgi_helper import WSGIMiddleware
+from aspire.core.errors_helper import ServerErrorMiddleware
+from aspire.core.cors_helper import CORSMiddleware
+from aspire.core.gzip_helper import GZipMiddleware
+from aspire.core.httpsredirect_helper import HTTPSRedirectMiddleware
+from aspire.core.trustedhost_helper import TrustedHostMiddleware
+from aspire.core.sessions_helper import SessionMiddleware
+from aspire.core.routing import Lifespan
+from aspire.core.staticfiles import StaticFiles
+from aspire.core.testclient import TestClient
+from aspire.core.websockets import WebSocket
+from aspire.core.genny import GenerateId
 
 from aspire import models, status_codes
-from aspire.background_tasks import Queue
+from aspire.background import BackgroundQueue
 from aspire.formats import get_formats
 from aspire.routes import Router
 from aspire.statics import DEFAULT_API_THEME, DEFAULT_CORS_PARAMS, DEFAULT_SECRET_KEY
-#from .ext.schema import Schema as OpenAPISchema
+from aspire.ext.schema import Schema as OpenAPISchema
 from aspire.staticfiles import StaticFiles
 from aspire.templates import Templates
-#----------------- Aspire API -------------------------------
+
 
 class API:
-    ''' Aspire Web-services class.
+    """The primary web-service class.
 
-        Handle request and response
-        :param static_dir: Static assets directory. Created  on demand
-        :param templates_dir: Templates directory. Created  on demand
-        :param auto_escape: Automatically escapes HTML and XML templates on True
-        :param enable_https: Redirects all responses to HTTPS URLS on True.
-    '''
-    status_codes:[] = status_codes
+        :param static_dir: The directory to use for static files. Will be created for you if it doesn't already exist.
+        :param templates_dir: The directory to use for templates. Will be created for you if it doesn't already exist.
+        :param auto_escape: If ``True``, HTML and XML templates will automatically be escaped.
+        :param enable_hsts: If ``True``, send all responses to HTTPS URLs.
+    """
+
+    status_codes = status_codes
+
     def __init__(
         self,
         *,
-        allowed_hosts = None,
-        auto_escape:bool = True,
-        contact:str = None,
-        cors:bool = False,
-        cors_params = DEFAULT_CORS_PARAMS,
-        debug:bool = False,
-        description:str = None,
-        docs_route:str = None,
-        enable_https:bool = False,
-        license:str = None,
-        #openapi=None,
-        #openapi_route:str = "/schema.yml", 
-        secret_key:str =DEFAULT_SECRET_KEY,
-        
-        static_dir:str = "static",
-        static_route:str = "/static",
-        terms_of_service:str = None,
-        templates_dir:str = "templates",
-
-        title:str = None,
-        version:str = None
+        debug=False,
+        title=None,
+        version=None,
+        description=None,
+        terms_of_service=None,
+        contact=None,
+        license=None,
+        openapi=None,
+        openapi_route="/schema.yml",
+        static_dir="static",
+        static_route="/static",
+        templates_dir="templates",
+        auto_escape=True,
+        secret_key=DEFAULT_SECRET_KEY,
+        enable_https=False,
+        docs_route=None,
+        cors=False,
+        cors_params=DEFAULT_CORS_PARAMS,
+        allowed_hosts=None,
     ):
+        self.background = BackgroundQueue()
 
-
-        #super(API, self).__init__()
         self.secret_key = secret_key
-        
+
         self.router = Router()
+
+        self.genny = GenerateId()
 
         if static_dir is not None:
             if static_route is None:
@@ -83,7 +82,7 @@ class API:
         self.https_enabled = enable_https
         self.cors = cors
         self.cors_params = cors_params
-        self.debug = debug  
+        self.debug = debug
 
         if not allowed_hosts:
             # if not debug:
@@ -102,7 +101,7 @@ class API:
         self.formats = get_formats()
 
         # Cached requests session.
-        self._session = None  
+        self._session = None
 
         self.default_endpoint = None
         self.app = ExceptionMiddleware(self.router, debug=debug)
@@ -118,7 +117,7 @@ class API:
         self.add_middleware(ServerErrorMiddleware, debug=debug)
         self.add_middleware(SessionMiddleware, secret_key=self.secret_key)
 
-        """if openapi or docs_route:
+        if openapi or docs_route:
             self.openapi = OpenAPISchema(
                 app=self,
                 title=title,
@@ -132,8 +131,8 @@ class API:
                 openapi_route=openapi_route,
                 static_route=static_route,
             )
-        """
-        ## TODO: Update docs for templates
+
+        # TODO: Update docs for templates
         self.templates = Templates(directory=templates_dir)
         self.requests = (
             self.session()
@@ -152,13 +151,13 @@ class API:
             return f
 
         return decorator
-        
+
     def add_middleware(self, middleware_cls, **middleware_config):
         self.app = middleware_cls(self.app, **middleware_config)
 
     def schema(self, name, **options):
         """Decorator for creating new routes around function and class definitions.
-            Usage::
+        Usage::
             from marshmallow import Schema, fields
             @api.schema("Pet")
             class PetSchema(Schema):
@@ -170,35 +169,34 @@ class API:
             return f
 
         return decorator
-        
+
     def path_matches_route(self, path):
         """Given a path portion of a URL, tests that it matches against any registered route.
 
-            :param path: The path portion of a URL, to test all known routes against.
+        :param path: The path portion of a URL, to test all known routes against.
         """
         for route in self.router.routes:
             match, _ = route.matches(path)
             if match:
                 return route
 
-
     def add_route(
-            self,
-            route=None,
-            endpoint=None,
-            *,
-            default=False,
-            static=True,
-            check_existing=True,
-            websocket=False,
-            before_request=False,
-        ):
+        self,
+        route=None,
+        endpoint=None,
+        *,
+        default=False,
+        static=True,
+        check_existing=True,
+        websocket=False,
+        before_request=False,
+    ):
         """Adds a route to the API.
 
-            :param route: A string representation of the route.
-            :param endpoint: The endpoint for the route -- can be a callable, or a class.
-            :param default: If ``True``, all unknown requests will route to this view.
-            :param static: If ``True``, and no endpoint was passed, render "static/index.html", and it will become a default route.
+        :param route: A string representation of the route.
+        :param endpoint: The endpoint for the route -- can be a callable, or a class.
+        :param default: If ``True``, all unknown requests will route to this view.
+        :param static: If ``True``, and no endpoint was passed, render "static/index.html", and it will become a default route.
         """
 
         # Path
@@ -229,8 +227,8 @@ class API:
             resp.text = "Not found."
 
     def redirect(
-            self, resp, location, *, set_text=True, status_code=status_codes.HTTP_301
-        ):
+        self, resp, location, *, set_text=True, status_code=status_codes.HTTP_301
+    ):
         """Redirects a given response to a given location.
         :param resp: The Response to mutate.
         :param location: The location of the redirect.
@@ -247,13 +245,14 @@ class API:
 
             @api.on_event('startup')
             async def open_database_connection_pool():
-                    ...
+                ...
 
             @api.on_event('shutdown')
-             async def close_database_connection_pool():
-                    ...
+            async def close_database_connection_pool():
+                ...
 
         """
+
         def decorator(func):
             self.add_event_handler(event_type, func, **args)
             return func
@@ -269,15 +268,14 @@ class API:
 
         self.router.lifespan_handler.add_event_handler(event_type, handler)
 
-
     def route(self, route=None, **options):
         """Decorator for creating new routes around function and class definitions.
 
         Usage::
 
-                @api.route("/hello")
-                def hello(req, resp):
-                    resp.text = "hello, world!"
+            @api.route("/hello")
+            def hello(req, resp):
+                resp.text = "hello, world!"
 
         """
 
@@ -290,8 +288,8 @@ class API:
     def mount(self, route, app):
         """Mounts an WSGI / ASGI application at a given route.
 
-            :param route: String representation of the route to be used (shouldn't be parameterized).
-            :param app: The other WSGI / ASGI app.
+        :param route: String representation of the route to be used (shouldn't be parameterized).
+        :param app: The other WSGI / ASGI app.
         """
         self.router.apps.update({route: app})
 
@@ -309,38 +307,38 @@ class API:
         # TODO: Absolute_url
         """Given an endpoint, returns a rendered URL for its route.
 
-            :param endpoint: The route endpoint you're searching for.
-            :param params: Data to pass into the URL generator (for parameterized URLs).
+        :param endpoint: The route endpoint you're searching for.
+        :param params: Data to pass into the URL generator (for parameterized URLs).
         """
         return self.router.url_for(endpoint, **params)
 
     def template(self, filename, *args, **kwargs):
         """Renders the given `jinja2 <http://jinja.pocoo.org/docs/>`_ template, with provided values supplied.
-            Note: The current ``api`` instance is by default passed into the view. This is set in the dict ``api.jinja_values_base``.
-            :param filename: The filename of the jinja2 template, in ``templates_dir``.
-            :param *args: Data to pass into the template.
-            :param *kwargs: Date to pass into the template.
+        Note: The current ``api`` instance is by default passed into the view. This is set in the dict ``api.jinja_values_base``.
+        :param filename: The filename of the jinja2 template, in ``templates_dir``.
+        :param *args: Data to pass into the template.
+        :param *kwargs: Date to pass into the template.
         """
         return self.templates.render(filename, *args, **kwargs)
 
     def template_string(self, source, *args, **kwargs):
         """Renders the given `jinja2 <http://jinja.pocoo.org/docs/>`_ template string, with provided values supplied.
-            Note: The current ``api`` instance is by default passed into the view. This is set in the dict ``api.jinja_values_base``.
-            :param source: The template to use.
-            :param *args: Data to pass into the template.
-            :param **kwargs: Data to pass into the template.
+        Note: The current ``api`` instance is by default passed into the view. This is set in the dict ``api.jinja_values_base``.
+        :param source: The template to use.
+        :param *args: Data to pass into the template.
+        :param **kwargs: Data to pass into the template.
         """
-        return self.templates.render_string(source, *args, **kwargs)   
+        return self.templates.render_string(source, *args, **kwargs)
 
     def serve(self, *, host=None, port=None, debug=False, **options):
         """Runs the application with uvicorn. If the ``PORT`` environment
-                variable is set, requests will be served on that port automatically to all
-                known hosts.
+        variable is set, requests will be served on that port automatically to all
+        known hosts.
 
-                :param host: The host to bind to.
-                :param port: The port to bind to. If none is provided, one will be selected at random.
-                :param debug: Run uvicorn server in debug mode.
-                :param options: Additional keyword arguments to send to ``uvicorn.run()``.
+        :param host: The host to bind to.
+        :param port: The port to bind to. If none is provided, one will be selected at random.
+        :param debug: Run uvicorn server in debug mode.
+        :param options: Additional keyword arguments to send to ``uvicorn.run()``.
         """
 
         if "PORT" in os.environ:
@@ -351,7 +349,7 @@ class API:
         if host is None:
             host = "127.0.0.1"
         if port is None:
-            port = 9092
+            port = 5042
 
         def spawn():
             uvicorn.run(self, host=host, port=port, debug=debug, **options)

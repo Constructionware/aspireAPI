@@ -31,7 +31,7 @@ class Templates:
         """Renders the given `jinja2 <http://jinja.pocoo.org/docs/>`_ template, with provided values supplied.
 
         :param template: The filename of the jinja2 template.
-        :param *args: Data to pass into the template.
+        :param **kwargs: Data to pass into the template.
         :param **kwargs: Data to pass into the template.
         """
         return self.get_template(template).render(*args, **kwargs)
@@ -57,4 +57,3 @@ class Templates:
         """
         template = self._env.from_string(source)
         return template.render(*args, **kwargs)
-

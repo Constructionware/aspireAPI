@@ -14,5 +14,5 @@ install:
 
 # command to run the dependencies
 script:
-  - black responder tests setup.py --check
+  - black aspire tests setup.py --check
   - pytest
