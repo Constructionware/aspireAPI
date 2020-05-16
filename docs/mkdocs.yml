@@ -1,0 +1,15 @@
+site_name: Aspire 
+nav:
+    - Home: index.md
+    - User Guide:
+      - 'Getting Started': user-guide/getting-started.md
+      - Configuration: user-guide/configuration-options.md
+      - 'Creating Your First Application': user-guide/first-app.md
+    - About: 
+      - 'About Aspire': about.md
+      - License: license/license.md
+theme: 
+  name: readthedocs
+  nav_style: dark
+
+repo_url: https://github.com/Constructionware/aspire/

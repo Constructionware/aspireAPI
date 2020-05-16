@@ -349,7 +349,7 @@ class API:
         if host is None:
             host = "127.0.0.1"
         if port is None:
-            port = 5042
+            port = 1090
 
         def spawn():
             uvicorn.run(self, host=host, port=port, debug=debug, **options)
