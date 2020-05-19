@@ -1,3 +1,4 @@
+# Depricated | will be removed in future versions use of standard http.request_codes accessed from web_services calls| csware
 """
 HTTP codes
 See RFC 2616 - https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html

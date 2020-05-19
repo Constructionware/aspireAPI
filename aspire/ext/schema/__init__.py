@@ -7,8 +7,8 @@ import yaml
 from apispec import APISpec, yaml_utils
 from apispec.ext.marshmallow import MarshmallowPlugin
 
-from aspire.statics import DEFAULT_API_THEME
-from aspire.staticfiles import StaticFiles
+from aspire.config import DEFAULT_API_THEME
+from aspire.responder import StaticFiles
 from aspire import status_codes
 
 

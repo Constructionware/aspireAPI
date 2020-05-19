@@ -11,8 +11,7 @@ from urllib.parse import unquote, urljoin, urlsplit
 
 import requests
 
-from aspire.core.types import Message, Receive, Scope, Send
-from aspire.core.websockets import WebSocketDisconnect
+from aspire.core.reactor import Message, Receive, Scope, Send, WebSocketDisconnect
 
 # Annotations for `Session.request()`
 Cookies = typing.Union[

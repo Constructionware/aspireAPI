@@ -1,32 +1,39 @@
+
+import jinja2
 import json
 import os
+import uvicorn
 
 from pathlib import Path
 
-import jinja2
-import uvicorn
-from aspire.core.exceptions import ExceptionMiddleware
-from aspire.core.wsgi_helper import WSGIMiddleware
-from aspire.core.errors_helper import ServerErrorMiddleware
-from aspire.core.cors_helper import CORSMiddleware
-from aspire.core.gzip_helper import GZipMiddleware
-from aspire.core.httpsredirect_helper import HTTPSRedirectMiddleware
-from aspire.core.trustedhost_helper import TrustedHostMiddleware
-from aspire.core.sessions_helper import SessionMiddleware
-from aspire.core.routing import Lifespan
-from aspire.core.staticfiles import StaticFiles
+from aspire.core.reactor import ( 
+   
+    ExceptionMiddleware,
+    Lifespan,
+    StaticFiles,
+    WebSocket,
+    WSGIMiddleware
+)
+from aspire.core.reactor import (
+    ServerErrorMiddleware,
+    GZipMiddleware
+)
+from aspire.core.security_service import (
+    CORSMiddleware,
+    HTTPSRedirectMiddleware,
+    TrustedHostMiddleware,
+    SessionMiddleware,
+    EncryptMessage,
+    GenerateId
+) 
 from aspire.core.testclient import TestClient
-from aspire.core.websockets import WebSocket
-from aspire.core.genny import GenerateId
 
-from aspire import models, status_codes
-from aspire.background import BackgroundQueue
-from aspire.formats import get_formats
-from aspire.routes import Router
-from aspire.statics import DEFAULT_API_THEME, DEFAULT_CORS_PARAMS, DEFAULT_SECRET_KEY
+
+from aspire.responder import ( get_formats, QueryDict, content_setter, Request, Response )
+from aspire import status_codes
+from aspire.responder import ( BackgroundQueue, Router, StaticFiles, Templates )
+from aspire.config import DEFAULT_API_THEME, DEFAULT_CORS_PARAMS, DEFAULT_SECRET_KEY
 from aspire.ext.schema import Schema as OpenAPISchema
-from aspire.staticfiles import StaticFiles
-from aspire.templates import Templates
 
 
 class API:
@@ -68,8 +75,12 @@ class API:
         self.secret_key = secret_key
 
         self.router = Router()
+        # Generate Id utility
+        self.generate_id = GenerateId()
 
-        self.genny = GenerateId()
+        # Encrypt Decrypt Messages and file utility
+        self.encrypt_message = EncryptMessage()
+        
 
         if static_dir is not None:
             if static_route is None:
@@ -330,6 +341,13 @@ class API:
         """
         return self.templates.render_string(source, *args, **kwargs)
 
+    def secure_server(self):
+        '''Server Security
+
+            Handles server certificates and server encryption keys 
+        '''
+        pass
+
     def serve(self, *, host=None, port=None, debug=False, **options):
         """Runs the application with uvicorn. If the ``PORT`` environment
         variable is set, requests will be served on that port automatically to all
@@ -352,7 +370,13 @@ class API:
             port = 1090
 
         def spawn():
-            uvicorn.run(self, host=host, port=port, debug=debug, **options)
+            if self.https_enabled:
+                cert = "/Users/mipla/Projects/aspire/aspire/core/.ssl/aspire.crt"               
+                pem = "/Users/mipla/Projects/aspire/aspire/core/.ssl/aspire.pem"
+                #print(f'Aspire Server Beta Version {self.version} Powered By Uvicorn')
+                uvicorn.run(self, ssl_keyfile=pem, ssl_certfile=cert, host=host, port=port, debug=False, **options)
+            else:
+                uvicorn.run(self, host=host, port=port, debug=debug, **options)
 
         spawn()
 
