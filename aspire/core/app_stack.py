@@ -3,7 +3,7 @@
 import json
 import typing
 
-from aspire.core import Core,  status
+from aspire.core import Core as Middleware,  status
 from aspire.core.reactor import (
     BaseHTTPMiddleware, ExceptionMiddleware, ServerErrorMiddleware, BaseRoute, Router,
     ASGIApp, Receive, Scope, Send,
@@ -12,7 +12,7 @@ from aspire.core.reactor import (
     State, URLPath
 
 )
-
+'''
 try:
     import graphene
     from graphql.execution.executors.asyncio import AsyncioExecutor
@@ -24,7 +24,7 @@ except ImportError:  # pragma: nocover
     format_graphql_error = None  # type: ignore
     GraphQLError = None  # type: ignore
 
-
+'''
 #---------------------------- Aspiration Application ------------------------------
 class Aspiration:
     def __init__(
@@ -164,9 +164,11 @@ class Aspiration:
         return decorator
 
     def middleware(self, middleware_type: str) -> typing.Callable:
-        assert (
-            middleware_type == "http"
-        ), 'Currently only middleware("http") is supported.'
+        if not middleware_type == "http":
+            raise Exception('Currently only middleware("http") is supported.')
+        #assert (
+        #    middleware_type == "http"
+        #), 'Currently only middleware("http") is supported.'
 
         def decorator(func: typing.Callable) -> typing.Callable:
             self.add_middleware(BaseHTTPMiddleware, dispatch=func)
@@ -183,6 +185,7 @@ class Aspiration:
 
 
 #---------------------------- GraphQL Application ------------------------------
+'''
 class GraphQLApp:
     def __init__(
         self,
@@ -305,7 +308,7 @@ class GraphQLApp:
     async def handle_graphiql(self, request: Request) -> Response:
         text = GRAPHIQL.replace("{{REQUEST_PATH}}", json.dumps(request.url.path))
         return HTMLResponse(text)
-
+'''
 
 GRAPHIQL = """
 <!--

@@ -22,23 +22,26 @@ if sys.argv[-1] == "publish":
     sys.exit()
 
 required = [
-    
-    "uvicorn",
+
+
     "aiofiles",
-    "pyyaml",
-    "requests",    
-    "jinja2",
-    "rfc3986",
-    "python-multipart",
-    "chardet",
-    "apispec>=1.0.0b1",
-    "marshmallow",
-    "whitenoise",
-    "docopt",
-    "requests-toolbelt",
+    "apispec",
     "apistar",
+    "chardet",
+    "cryptography",
+    "docopt",
     "itsdangerous",
+    "jinja2",
+    "marshmallow",
+    "pyyaml",
+    "python-multipart",
+    "requests",
+    "rfc3986",
+    "requests-toolbelt",
     "StringGenerator",
+    "ujson",
+    "uvicorn",
+    "whitenoise",
 ]
 
 
@@ -111,7 +114,7 @@ class UploadCommand(Command):
 setup(
     name="aspire",
     version=about["__version__"],
-    description="A Minimal ASGI friendly HTTP framework.",
+    description="A Minimal ASGI friendly HTTP framework Built for the Construction Industry!.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Ian Moncrieffe",
@@ -119,7 +122,7 @@ setup(
     url="https://github.com/Constructionware/aspire",
     packages=find_packages(exclude=["tests"]),
     entry_points={"console_scripts": ["aspire=aspire.cli:cli"]},
-    package_data={},
+    package_data={"aspire": ["py.typed"]},
     python_requires=">=3.8",
     setup_requires=[],
     install_requires=required,

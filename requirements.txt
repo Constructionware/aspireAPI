@@ -1,0 +1,32 @@
+# Optionals
+aiofiles
+cryptography
+#graphene
+itsdangerous
+jinja2
+python-multipart
+pyyaml
+requests
+ujson
+uvicorn
+StringGenerator
+
+# Testing
+autoflake
+black==20.8b1
+databases[sqlite]
+flake8
+isort==5.*
+mypy
+pytest
+pytest-cov
+pytest-asyncio
+
+# Documentation
+mkdocs
+mkdocs-material
+mkautodoc
+
+# Packaging
+twine
+wheel

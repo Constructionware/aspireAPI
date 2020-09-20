@@ -24,6 +24,7 @@ from aspire.core.security_service import (
     TrustedHostMiddleware,
     SessionMiddleware,
     EncryptMessage,
+    ServerSecret,
     GenerateId
 ) 
 from aspire.core.testclient import TestClient
@@ -77,7 +78,8 @@ class API:
         self.router = Router()
         # Generate Id utility
         self.generate_id = GenerateId()
-
+        # Server Cert 
+        self.ssl = ServerSecret()
         # Encrypt Decrypt Messages and file utility
         self.encrypt_message = EncryptMessage()
         
@@ -371,9 +373,9 @@ class API:
 
         def spawn():
             if self.https_enabled:
-                cert = "/Users/mipla/Projects/aspire/aspire/core/.ssl/aspire.crt"               
-                pem = "/Users/mipla/Projects/aspire/aspire/core/.ssl/aspire.pem"
-                #print(f'Aspire Server Beta Version {self.version} Powered By Uvicorn')
+                cert = self.ssl.get_server_cert()               
+                pem = self.ssl.get_server_key() 
+                print(f'Aspire Secure Server Beta Version {self.version} Powered By Uvicorn')
                 uvicorn.run(self, ssl_keyfile=pem, ssl_certfile=cert, host=host, port=port, debug=False, **options)
             else:
                 uvicorn.run(self, host=host, port=port, debug=debug, **options)
