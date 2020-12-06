@@ -12,7 +12,7 @@ from aspire.core.reactor import (
     State, URLPath
 
 )
-'''
+
 try:
     import graphene
     from graphql.execution.executors.asyncio import AsyncioExecutor
@@ -24,7 +24,7 @@ except ImportError:  # pragma: nocover
     format_graphql_error = None  # type: ignore
     GraphQLError = None  # type: ignore
 
-'''
+
 #---------------------------- Aspiration Application ------------------------------
 class Aspiration:
     def __init__(
@@ -185,7 +185,6 @@ class Aspiration:
 
 
 #---------------------------- GraphQL Application ------------------------------
-'''
 class GraphQLApp:
     def __init__(
         self,
@@ -308,7 +307,7 @@ class GraphQLApp:
     async def handle_graphiql(self, request: Request) -> Response:
         text = GRAPHIQL.replace("{{REQUEST_PATH}}", json.dumps(request.url.path))
         return HTMLResponse(text)
-'''
+
 
 GRAPHIQL = """
 <!--

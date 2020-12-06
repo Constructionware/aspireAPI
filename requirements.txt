@@ -1,7 +1,6 @@
 # Optionals
 aiofiles
 cryptography
-#graphene
 itsdangerous
 jinja2
 python-multipart
@@ -10,6 +9,8 @@ requests
 ujson
 uvicorn
 StringGenerator
+microdict
+spylls
 
 # Testing
 autoflake

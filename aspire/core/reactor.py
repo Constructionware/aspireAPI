@@ -793,14 +793,13 @@ class State(object):
         self._state[key] = value
 
     def __getattr__(self, key: typing.Any) -> typing.Any:
-        try:
-            return self._state[key]
-        except KeyError:
-            message = "'{}' object has no attribute '{}'"
-            raise AttributeError(message.format(self.__class__.__name__, key))
+        return self._state.get(key, AttributeError( f"{self.__class__.__name__} Object missing attribute {key}" )) 
 
     def __delattr__(self, key: typing.Any) -> None:
-        del self._state[key]
+        try:
+            del self._state[key]
+        except KeyError:
+            return AttributeError( f"{self.__class__.__name__} Object missing attribute {key}" )
 
 
 
