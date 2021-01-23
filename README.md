@@ -1,7 +1,7 @@
 # aspire
 Python ASGI WebServer Framework
 
-This library is a fork of Kenneth Rietz Responder.  It is still in beta state!
+Production Ready Python ASGI WebServer Framework for the Restless!
 
 ## Installation:
 
