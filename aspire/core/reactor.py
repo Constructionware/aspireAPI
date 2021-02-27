@@ -2356,8 +2356,11 @@ class StaticFiles:
             # Check for '404.html' if we're in HTML mode.
             full_path, stat_result = await self.lookup_path("404.html")
             if stat_result is not None and stat.S_ISREG(stat_result.st_mode):
-                return self.file_response(
-                    full_path, stat_result, scope, status_code=404
+                return FileResponse(
+                    full_path, 
+                    stat_result=stat_result, 
+                    method=scope["method"], 
+                    status_code=404
                 )
 
         return PlainTextResponse("Not Found", status_code=404)
@@ -2484,15 +2487,15 @@ class _TemplateResponse(Response):
         await super().__call__(scope, receive, send)
 
 
-class Jinja2Templates:
+class JinjaTemplates:
     """
-    templates = Jinja2Templates("templates")
+    templates = Templates("templates")
 
     return templates.TemplateResponse("index.html", {"request": request})
     """
 
     def __init__(self, directory: str) -> None:
-        assert jinja2 is not None, "jinja2 must be installed to use Jinja2Templates"
+        assert jinja2 is not None, "jinja2 must be installed to use Templates"
         self.env = self.get_env(directory)
 
     def get_env(self, directory: str) -> "jinja2.Environment":
@@ -3297,16 +3300,25 @@ class ServerErrorMiddleware:
         traceback_obj = traceback.TracebackException.from_exception(
             exc, capture_locals=True
         )
-        frames = inspect.getinnerframes(
-            traceback_obj.exc_traceback, limit  # type: ignore
-        )
+        #frames = inspect.getinnerframes(
+        #    traceback_obj.exc_traceback, limit  # type: ignore
+        #)
 
         center_lineno = int((limit - 1) / 2)
         exc_html = ""
         is_collapsed = False
-        for frame in reversed(frames):
-            exc_html += self.generate_frame_html(frame, center_lineno, is_collapsed)
-            is_collapsed = True
+
+        #for frame in reversed(frames):
+        #    exc_html += self.generate_frame_html(frame, center_lineno, is_collapsed)
+        #    is_collapsed = True
+        # Implemented Feb 27 2021 
+        exc_traceback = exc.__traceback__
+        if exc_traceback is not None:
+            frames = inspect.getinnerframes(exc_traceback, limit)
+            for frame in reversed(frames):
+                exc_html += self.generate_frame_html(frame, center_lineno, is_collapsed)
+                is_collapsed = True
+
 
         error = f"{traceback_obj.exc_type.__name__}: {html.escape(str(traceback_obj))}"
 

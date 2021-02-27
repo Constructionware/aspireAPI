@@ -2,6 +2,7 @@
 
 Usage:
   aspire
+  aspire create 'app'
   aspire run [--build] [--debug] <module>
   aspire build
   aspire --version
@@ -24,8 +25,12 @@ def cli():
     )
 
     module = args["<module>"]
+    create = args["create"]
     build = args["build"] or args["--build"]
     run = args["run"]
+
+    if create:        
+        print('creating app')         
 
     if build:
         os.system("npm run build")

@@ -11,6 +11,7 @@ from aspire.core.reactor import (
     ExceptionMiddleware,
     Lifespan,
     StaticFiles,
+    JinjaTemplates,
     WebSocket,
     WSGIMiddleware
 )
@@ -147,6 +148,7 @@ class API:
 
         # TODO: Update docs for templates
         self.templates = Templates(directory=templates_dir)
+        self.jinja_templates = JinjaTemplates
         self.requests = (
             self.session()
         )  #: A Requests session that is connected to the ASGI app.
@@ -375,7 +377,7 @@ class API:
             if self.https_enabled:
                 cert = self.ssl.get_server_cert()               
                 pem = self.ssl.get_server_key() 
-                print(f'Aspire Secure Server Beta Version {self.version} Powered By Uvicorn')
+                print(f'Aspire Secure Server Version {self.version} Powered By Uvicorn')
                 uvicorn.run(self, ssl_keyfile=pem, ssl_certfile=cert, host=host, port=port, debug=False, **options)
             else:
                 uvicorn.run(self, host=host, port=port, debug=debug, **options)

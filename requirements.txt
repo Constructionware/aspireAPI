@@ -7,7 +7,7 @@ python-multipart
 pyyaml
 requests
 ujson
-uvicorn
+uvicorn['standard']
 StringGenerator
 microdict
 spylls

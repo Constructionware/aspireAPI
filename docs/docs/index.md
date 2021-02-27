@@ -21,7 +21,7 @@ Aspire is a lightweight fully production ready pure Python ASGI web application 
 
 ```
 
- A fork of Kenneth Reitz Responder | Inspired by Pallets Flask  and Tom Christie,s Starlette
+Inspired by Kenneth Reitz Responder | and Tom Christie,s Starlette
 
 For full documentation visit [mkdocs.org](https://www.mkdocs.org).
 
