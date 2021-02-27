@@ -35,13 +35,16 @@ from mimetypes import guess_type
 from urllib.parse import quote_plus
 from collections.abc import Mapping
 
-
-
 try:
     import contextvars  # Python 3.7+ only.
 except ImportError:  # pragma: no cover
     contextvars = None  # type: ignore
 
+# Implemented Feb 27-2021 By Author 
+if sys.version_info >= (3, 7):  # pragma: no cover
+    from asyncio import create_task
+else:  # pragma: no cover
+    from asyncio import ensure_future as create_task
 
 
 try:
@@ -94,6 +97,13 @@ ASGIApp = typing.Callable[[Scope, Receive, Send], typing.Awaitable[None]]
 
 
 T = typing.TypeVar("T")
+
+# Implemented Feb 27-2021 By Author Update from starlette 1.3
+async def run_until_first_complete(*args: typing.Tuple[typing.Callable, dict]) -> None:
+    tasks = [create_task(handler(**kwargs)) for handler, kwargs in args]
+    (done, pending) = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+    [task.cancel() for task in pending]
+    [task.result() for task in done]
 
 
 async def run_in_threadpool(
