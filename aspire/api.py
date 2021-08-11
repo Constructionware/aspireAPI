@@ -1,19 +1,16 @@
-
-import jinja2
-import json
 import os
-import uvicorn
+try:
+    from uvicorn import run as launch
+except ImportError as e:
+    pass
 
 from pathlib import Path
 
-from aspire.core.reactor import ( 
-   
-    ExceptionMiddleware,
-    Lifespan,
+from aspire.core.reactor import (    
+    ExceptionMiddleware,    
     StaticFiles,
     JinjaTemplates,
-    WebSocket,
-    WSGIMiddleware
+   
 )
 from aspire.core.reactor import (
     ServerErrorMiddleware,
@@ -31,10 +28,10 @@ from aspire.core.security_service import (
 from aspire.core.testclient import TestClient
 
 
-from aspire.responder import ( get_formats, QueryDict, content_setter, Request, Response )
+from aspire.responder import ( get_formats) #, QueryDict, content_setter, Request, Response )
 from aspire import status_codes
 from aspire.responder import ( BackgroundQueue, Router, StaticFiles, Templates )
-from aspire.config import DEFAULT_API_THEME, DEFAULT_CORS_PARAMS, DEFAULT_SECRET_KEY
+from aspire.config import DEFAULT_CORS_PARAMS, DEFAULT_SECRET_KEY #  DEFAULT_API_THEME,
 from aspire.ext.schema import Schema as OpenAPISchema
 
 
@@ -360,7 +357,7 @@ class API:
         :param host: The host to bind to.
         :param port: The port to bind to. If none is provided, one will be selected at random.
         :param debug: Run uvicorn server in debug mode.
-        :param options: Additional keyword arguments to send to ``uvicorn.run()``.
+        :param options: Additional keyword arguments to send to `` launch()``.
         """
 
         if "PORT" in os.environ:
@@ -378,9 +375,9 @@ class API:
                 cert = self.ssl.get_server_cert()               
                 pem = self.ssl.get_server_key() 
                 print(f'Aspire Secure Server Version {self.version} Powered By Uvicorn')
-                uvicorn.run(self, ssl_keyfile=pem, ssl_certfile=cert, host=host, port=port, debug=False, **options)
+                launch(self, ssl_keyfile=pem, ssl_certfile=cert, host=host, port=port, debug=False, **options)
             else:
-                uvicorn.run(self, host=host, port=port, debug=debug, **options)
+                launch(self, host=host, port=port, debug=debug, **options)
 
         spawn()
 

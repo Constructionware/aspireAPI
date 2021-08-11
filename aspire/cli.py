@@ -16,6 +16,7 @@ Options:
 import os
 
 import docopt
+
 from .__version__ import __version__
 
 

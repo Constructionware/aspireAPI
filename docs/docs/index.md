@@ -1,6 +1,6 @@
 # Aspire&reg;
 
-Aspire is a lightweight fully production ready pure Python ASGI web application framework and tool belt, built with the latest cool web technologies to make creating and deploying simple to large scale complex web applications less difficult.<br>
+Aspire is a lightweight fully production ready pure Python ASGI web application framework with batteries included, built with the latest cool web technologies to make creating and deploying simple to large scale complex web applications less difficult.<br>
 
 
     from aspire import API  

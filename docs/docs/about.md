@@ -28,8 +28,8 @@ resulting in unnessesary cpu loads, a heavier memory usage and eventually slower
 ```
 
 Optimising our dependents We dropped the entire os import and opted for a tiny portion with a direct import of its sub module.
-we depricated the memory waste variable "path" and return the result directly. Allbe it we get a faster executing code with vastly reduced memory footprint. 
+we depricated the memory waste variable "path" and return the result directly. We get a faster executing code with vastly reduced memory footprint. 
 
-The result is a much more agile, stable and reliable application with a longer operablee lifespan between updates and 
+The result is a much more agile, stable and reliable application with a longer operable lifespan between updates and 
 an apperciated reduction in memory footprint both on the host and in runtime.
 

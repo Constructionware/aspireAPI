@@ -7,7 +7,7 @@ DEFAULT_SECRET_KEY = "NOTASECRET"
 
 DEFAULT_CORS_PARAMS = {
     "allow_origins": (),
-    "allow_methods": ("GET",),
+    "allow_methods": ("GET", "POST", "PUT", "DELETE", "HEAD"),
     "allow_headers": (),
     "allow_credentials": False,
     "allow_origin_regex": None,

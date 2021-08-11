@@ -397,7 +397,7 @@ class CORSMiddleware:
         self,
         app: ASGIApp,
         allow_origins: typing.Sequence[str] = (),
-        allow_methods: typing.Sequence[str] = ("GET",),
+        allow_methods: typing.Sequence[str] = ("GET", "POST", "PUT", "DELETE", "HEAD"),
         allow_headers: typing.Sequence[str] = (),
         allow_credentials: bool = False,
         allow_origin_regex: str = None,
