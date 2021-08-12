@@ -3,8 +3,8 @@
 
 
 from genericpath import isfile
-from os import path, getlogin, mkdir, remove
-
+from os import  getlogin, mkdir, remove
+from os.path import abspath, join, isdir
 # Use SimpleJson if available , resorts to json if not
 try: 
     import simplejson as json
@@ -25,7 +25,7 @@ class JsonCRURD:
         try:
             payload = json.dumps(data, indent = 4) # serialize data
             del(data)
-            with open(path.join(self.file_dir, handle), "w") as outfile:
+            with open(join(self.file_dir, handle), "w") as outfile:
                 outfile.write(payload)
             del(payload)
             del(handle)
@@ -40,7 +40,7 @@ class JsonCRURD:
         ''' Reads a json file from the system'''
         try:
             # Reading a .json            
-            with open(path.join(self.file_dir, handle), "r") as infile:
+            with open(join(self.file_dir, handle), "r") as infile:
                 json_object = json.load(infile)                    
             del(handle)
             del(infile)
@@ -73,7 +73,7 @@ class JsonCRURD:
     async def delete_json(self, handle: str=None):
             ''' Deletes a file ''' 
             try:
-                remove(path.join(self.file_dir, handle) )
+                remove(join(self.file_dir, handle) )
                 del(handle)        
                 return status.HTTP_200_OK
             except Exception as e:
@@ -88,8 +88,8 @@ class FileWriter(
     """ File writing Utility
     Creates a hidden file directory called asp_bak in the users Home directory 
     """
-    file_path = path.abspath(f'C:/Users/{getlogin()}')
-    file_dir = path.join(file_path, '.asp_bak')
+    file_path = abspath(f'C:/Users/{getlogin()}')
+    file_dir = join(file_path, '.asp_bak')
 
     def __init__(self):
         self.setup_file_dir()
@@ -97,7 +97,7 @@ class FileWriter(
     # checking for file_dir
     def setup_file_dir(self): 
         """ Creates a new directory on the file system"""       
-        if path.isdir(self.file_path):
+        if isdir(self.file_path):
             pass
         else:
             mkdir(self.file_dir)

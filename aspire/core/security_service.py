@@ -628,7 +628,7 @@ class EncryptMessage():
     key_file_name:str = 'test_key.key'
 
     def generate_hash_key(self, key_name:str=None):
-        hash_key = fn.generate_key()
+        hash_key = fn.generate_key(key_name)
         #print(hash_key)  
         
         #mkdir(key_dir)
